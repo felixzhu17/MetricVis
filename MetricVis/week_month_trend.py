@@ -55,7 +55,9 @@ class WeekMonthTrend:
         self.different_axis = different_axis
         self.metric_name = ifnone(metric_name, clean_text(self.col_name))
         self.metric_name_py = self.metric_name + " PY"
-        self.plot_title = ifnone(plot_title, "Weekly/Monthly Trend - " +  self.metric_name)
+        self.plot_title = ifnone(
+            plot_title, "Weekly/Monthly Trend - " + self.metric_name
+        )
         self.number_format = format_percentage if percentage else format_absolute
         self.weekly_df = self._create_weekly_df(weekly_df)
         self.monthly_df = self._create_monthly_df(monthly_df)
