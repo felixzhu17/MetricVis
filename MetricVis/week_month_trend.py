@@ -79,7 +79,7 @@ class WeekMonthTrend:
         monthly_df.rename({self.col_name: self.metric_name}, axis=1, inplace=True)
         monthly_df["month"] = monthly_df.index.month
         monthly_df["year"] = monthly_df.index.year
-        monthly_df_sample = monthly_df.iloc[- self.month_lookback :]
+        monthly_df_sample = monthly_df.iloc[-self.month_lookback :]
         monthly_df_sample[self.metric_name_py] = monthly_df_sample.apply(
             get_month_before, axis=1, df=monthly_df, col=self.metric_name
         )

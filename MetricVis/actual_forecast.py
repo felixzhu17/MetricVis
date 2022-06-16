@@ -4,14 +4,14 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-
 from MetricVis.utils import *
+
 
 def plot_actual_forecast(
     df: pd.DataFrame,
     actual_col: str,
     forecast_col: str,
-    lookback: int=12,
+    lookback: int = 12,
     metric_name: Optional[str] = None,
 ):
     return ActualForecast(
@@ -29,7 +29,7 @@ class ActualForecast:
         df: pd.DataFrame,
         actual_col: str,
         forecast_col: str,
-        lookback: int=12,
+        lookback: int = 12,
         metric_name: Optional[str] = None,
         percentage: bool = False,
         plot_title: Optional[bool] = None,
