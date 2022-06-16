@@ -1,17 +1,48 @@
-import plotly.graph_objects as go
-import pandas as pd
-from plotly.subplots import make_subplots
 from typing import Optional
+
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 from MetricVis.utils import *
 
 
-def plot_week_month_trend(df: pd.DataFrame, col_name: str, week_lookback: int=6, month_lookback: int =12, week_relative_width: float = 0.25, metric_name: Optional[str]=None, percentage:bool = False, different_axis:bool=True, plot_title: bool = None):
-    return WeekMonthTrend(df, col_name, week_lookback, month_lookback, week_relative_width, metric_name, percentage, different_axis, plot_title).plot
+def plot_week_month_trend(
+    df: pd.DataFrame,
+    col_name: str,
+    week_lookback: int = 6,
+    month_lookback: int = 12,
+    week_relative_width: float = 0.25,
+    metric_name: Optional[str] = None,
+    percentage: bool = False,
+    different_axis: bool = True,
+    plot_title: Optional[bool] = None,
+):
+    return WeekMonthTrend(
+        df = df,
+        col_name = col_name,
+        week_lookback = week_lookback,
+        month_lookback = month_lookback,
+        week_relative_width = week_relative_width,
+        metric_name = metric_name,
+        percentage= percentage,
+        different_axis = different_axis,
+        plot_title = plot_title,
+    ).create_plot()
 
 
 class WeekMonthTrend:
     def __init__(
-        self, df: pd.DataFrame, col_name: str, week_lookback: int=6, month_lookback: int =12, week_relative_width: float = 0.25, metric_name: Optional[str]=None, percentage:bool = False, different_axis:bool=True, plot_title: bool = None
+        self,
+        df: pd.DataFrame,
+        col_name: str,
+        week_lookback: int = 6,
+        month_lookback: int = 12,
+        week_relative_width: float = 0.25,
+        metric_name: Optional[str] = None,
+        percentage: bool = False,
+        different_axis: bool = True,
+        plot_title: bool = None,
     ):
         self.df = df
         self.col_name = col_name
@@ -25,8 +56,6 @@ class WeekMonthTrend:
         self.number_format = format_percentage if percentage else format_absolute
         self.weekly_df = self._create_weekly_df()
         self.monthly_df = self._create_monthly_df()
-        self.plot = self._create_plot()
-
 
     def _create_weekly_df(self):
         weekly_df = self.df[[self.col_name]].resample("1W").last()
@@ -73,14 +102,19 @@ class WeekMonthTrend:
         )
         monthly_df_sample.index = monthly_df_sample.index.strftime("%b '%y")
         return monthly_df_sample
-    
-    def _create_plot(self):
+
+    def create_plot(self):
         fig = make_subplots(
             rows=1,
             cols=2,
-            column_widths=[self.week_relative_width, 1-self.week_relative_width],
+            column_widths=[self.week_relative_width, 1 - self.week_relative_width],
             horizontal_spacing=0.025,
-            specs=[[{"secondary_y": self.different_axis}, {"secondary_y": self.different_axis}]],
+            specs=[
+                [
+                    {"secondary_y": self.different_axis},
+                    {"secondary_y": self.different_axis},
+                ]
+            ],
         )
         fig.add_trace(
             go.Scatter(
@@ -93,7 +127,7 @@ class WeekMonthTrend:
                 mode="lines+markers+text",
                 text=self.weekly_df[self.metric_name].apply(self.number_format),
                 textposition="top center",
-                cliponaxis=False
+                cliponaxis=False,
             ),
             row=1,
             col=1,
@@ -124,7 +158,7 @@ class WeekMonthTrend:
                 text=self.monthly_df[self.metric_name].apply(self.number_format),
                 textposition="top center",
                 showlegend=False,
-                cliponaxis=False
+                cliponaxis=False,
             ),
             secondary_y=self.different_axis,
             row=1,
@@ -145,23 +179,32 @@ class WeekMonthTrend:
             row=1,
             col=2,
         )
-        
+
         if self.different_axis is False:
             fig.update_yaxes(range=self._get_min_max())
             fig.update_yaxes(showticklabels=False, row=1, col=2)
 
         fig.update_layout(
             legend=dict(
-                orientation="h" , xanchor="center", yanchor="bottom", x=0.5, y=-0.5
+                orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5
             ),
             legend_title_text="",
             plot_bgcolor="white",
-            title = self.plot_title
+            title=self.plot_title,
         )
         return fig
 
-
-    def _get_min_max(self, buffer = 0.2):
-        minimum = min(self.weekly_df[self.metric_name].min(), self.weekly_df[self.metric_name_py].min(), self.monthly_df[self.metric_name].min(), self.monthly_df[self.metric_name_py].min())
-        maximum = max(self.weekly_df[self.metric_name].max(), self.weekly_df[self.metric_name_py].max(), self.monthly_df[self.metric_name].max(), self.monthly_df[self.metric_name_py].max())
-        return [minimum*(1-buffer), maximum*(1+buffer)]
+    def _get_min_max(self, buffer=0.2):
+        minimum = min(
+            self.weekly_df[self.metric_name].min(),
+            self.weekly_df[self.metric_name_py].min(),
+            self.monthly_df[self.metric_name].min(),
+            self.monthly_df[self.metric_name_py].min(),
+        )
+        maximum = max(
+            self.weekly_df[self.metric_name].max(),
+            self.weekly_df[self.metric_name_py].max(),
+            self.monthly_df[self.metric_name].max(),
+            self.monthly_df[self.metric_name_py].max(),
+        )
+        return [minimum * (1 - buffer), maximum * (1 + buffer)]
