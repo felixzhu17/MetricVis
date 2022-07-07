@@ -68,7 +68,7 @@ class WeekMonthTrend:
         weekly_df.rename({self.col_name: self.metric_name}, axis=1, inplace=True)
         weekly_df["week"] = weekly_df.index.isocalendar().week
         weekly_df["year"] = weekly_df.index.year
-        weekly_df_sample = weekly_df.iloc[1 - self.week_lookback :]
+        weekly_df_sample = weekly_df.iloc[- self.week_lookback :]
         weekly_df_sample[self.metric_name_py] = weekly_df_sample.apply(
             get_week_before, axis=1, df=weekly_df, col=self.metric_name
         )
