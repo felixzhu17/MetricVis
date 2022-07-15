@@ -1,4 +1,5 @@
 # MetricVis
+https://www.holistics.io/blog/how-amazon-measures/
 
 ## Installing
 ```
