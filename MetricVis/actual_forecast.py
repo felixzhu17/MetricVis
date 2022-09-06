@@ -165,8 +165,6 @@ class ActualForecast:
             secondary_y=True,
         )
 
-        fig.update_yaxes(range=[0, 1], secondary_y=False)
-
         fig.update_layout(
             legend=dict(
                 orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5
