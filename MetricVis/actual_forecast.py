@@ -88,7 +88,7 @@ class ActualForecast:
             axis=1,
             inplace=True,
         )
-        final_index = np.where(plot_df["Metric"].notnull())[0][-1]
+        final_index = np.where(plot_df[self.metric_name].notnull())[0][-1]
         plot_df_sample = plot_df.iloc[final_index - self.lookback + 1 :]
         plot_df_sample = plot_df_sample.drop(self.forecast_name, axis=1)
         plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
