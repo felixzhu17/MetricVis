@@ -179,7 +179,7 @@ class ActualForecast:
         fig.update_layout(
             dict(
                 yaxis2={"anchor": "x", "overlaying": "y", "side": "left"},
-                yaxis={"anchor": "x", "domain": [0.0, 1.0], "side": "right"},
+                yaxis={"anchor": "x", "side": "right"},
                 yaxis_tickformat=".0%",
             )
         )
