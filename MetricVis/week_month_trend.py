@@ -18,7 +18,7 @@ def plot_week_month_trend(
     percentage: bool = False,
     different_axis: bool = True,
     plot_title: Optional[bool] = None,
-    plotsize: Optional[list] = None
+    plotsize: Optional[list] = None,
 ):
     return WeekMonthTrend(
         weekly_df=weekly_df,
@@ -31,7 +31,7 @@ def plot_week_month_trend(
         percentage=percentage,
         different_axis=different_axis,
         plot_title=plot_title,
-        plotsize=plotsize
+        plotsize=plotsize,
     ).create_plot()
 
 
@@ -48,7 +48,7 @@ class WeekMonthTrend:
         percentage: bool = False,
         different_axis: bool = True,
         plot_title: bool = None,
-        plotsize: Optional[list] = None
+        plotsize: Optional[list] = None,
     ):
 
         self.col_name = col_name
@@ -64,7 +64,7 @@ class WeekMonthTrend:
         self.number_format = format_percentage if percentage else format_absolute
         self.weekly_df = self._create_weekly_df(weekly_df)
         self.monthly_df = self._create_monthly_df(monthly_df)
-        self.plotsize=plotsize
+        self.plotsize = plotsize
 
     def _create_weekly_df(self, weekly_df):
         weekly_df = weekly_df.sort_index()
@@ -181,7 +181,7 @@ class WeekMonthTrend:
             plot_bgcolor="white",
             title=self.plot_title,
         )
-        
+
         if self.plotsize:
             fig.update_layout(
                 width=self.plotsize[0],

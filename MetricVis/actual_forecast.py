@@ -1,8 +1,8 @@
 from re import I
 from typing import Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -19,7 +19,7 @@ def plot_actual_forecast(
     percentage: bool = False,
     plot_title: Optional[bool] = None,
     forecast_color: Optional[Union[str, list]] = None,
-    plotsize: Optional[list] = None
+    plotsize: Optional[list] = None,
 ):
     return ActualForecast(
         df=df,
@@ -31,7 +31,7 @@ def plot_actual_forecast(
         percentage=percentage,
         plot_title=plot_title,
         forecast_color=forecast_color,
-        plotsize=plotsize
+        plotsize=plotsize,
     ).create_plot()
 
 
@@ -47,9 +47,9 @@ class ActualForecast:
         percentage: bool = False,
         plot_title: Optional[bool] = None,
         forecast_color: Optional[Union[str, list]] = None,
-        plotsize: Optional[list] = None
+        plotsize: Optional[list] = None,
     ):
-        
+
         self.actual_col = actual_col
         self.forecast_col = forecast_col
         self.multi_forecast = check_list_type(self.forecast_col)
@@ -59,7 +59,12 @@ class ActualForecast:
         self.metric_name_py = self.metric_name + " PY"
         self.plot_title = ifnone(plot_title, "Actual vs Forecast - " + self.metric_name)
         self.number_format = format_percentage if percentage else format_absolute
-        self.forecast_name = ifnone(forecast_name, [self.metric_name + f" Forecast {i+1}" for i in range(len(forecast_col))] if self.multi_forecast else self.metric_name + " Forecast")
+        self.forecast_name = ifnone(
+            forecast_name,
+            [self.metric_name + f" Forecast {i+1}" for i in range(len(forecast_col))]
+            if self.multi_forecast
+            else self.metric_name + " Forecast",
+        )
         self.plot_df = self._create_monthly_df(self.df)
         self.forecast_color = ifnone(forecast_color, CORE_COLOURS)
         self.plotsize = plotsize
@@ -68,20 +73,23 @@ class ActualForecast:
         plot_df = df.resample("1M").last()
         plot_df["month"] = plot_df.index.month
         plot_df["year"] = plot_df.index.year
-        
+
         if self.multi_forecast:
-            rename_dict = {i:j for i,j in zip(self.forecast_col, self.forecast_name)}
+            rename_dict = {i: j for i, j in zip(self.forecast_col, self.forecast_name)}
             rename_dict[self.actual_col] = self.metric_name
         else:
-            rename_dict = {self.actual_col: self.metric_name, self.forecast_col: self.forecast_name}
-            
+            rename_dict = {
+                self.actual_col: self.metric_name,
+                self.forecast_col: self.forecast_name,
+            }
+
         plot_df.rename(
             rename_dict,
             axis=1,
             inplace=True,
         )
-        final_index = np.where(plot_df['Metric'].notnull())[0][-1]
-        plot_df_sample = plot_df.iloc[final_index-self.lookback+1:]
+        final_index = np.where(plot_df["Metric"].notnull())[0][-1]
+        plot_df_sample = plot_df.iloc[final_index - self.lookback + 1 :]
         plot_df_sample = plot_df_sample.drop(self.forecast_name, axis=1)
         plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
             get_month_before, axis=1, df=plot_df, col=self.metric_name
@@ -89,7 +97,7 @@ class ActualForecast:
         plot_df_sample["YOY Growth"] = (
             plot_df_sample[self.metric_name] / plot_df_sample[self.metric_name_py] - 1
         )
-        
+
         final_plot_df = (
             plot_df[convert_list_if_not(self.forecast_name)]
             .loc[plot_df_sample.index[0] :]
@@ -131,8 +139,6 @@ class ActualForecast:
                 ),
                 secondary_y=True,
             )
-            
-
 
         fig.add_trace(
             go.Scatter(
@@ -177,7 +183,7 @@ class ActualForecast:
                 yaxis_tickformat=".0%",
             )
         )
-        
+
         if self.plotsize:
             fig.update_layout(
                 width=self.plotsize[0],

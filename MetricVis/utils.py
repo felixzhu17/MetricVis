@@ -62,8 +62,10 @@ def get_week_before(row, df, col):
             f"Weekly data not available for {row['week']: .0f}-{row['year'] - 1: .0f}"
         )
 
+
 def check_list_type(x):
     return isinstance(x, (list, tuple))
+
 
 def convert_list_if_not(x):
     return x if check_list_type(x) else [x]
