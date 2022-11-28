@@ -18,6 +18,8 @@ def plot_week_month_trend(
     percentage: bool = False,
     different_axis: bool = True,
     plot_title: Optional[bool] = None,
+    yaxis_title: Optional[str] = None,
+    secondary_yaxis_title: Optional[str] = None,
     plotsize: Optional[list] = None,
 ):
     return WeekMonthTrend(
@@ -31,6 +33,8 @@ def plot_week_month_trend(
         percentage=percentage,
         different_axis=different_axis,
         plot_title=plot_title,
+        yaxis_title=yaxis_title,
+        secondary_yaxis_title=secondary_yaxis_title,
         plotsize=plotsize,
     ).create_plot()
 
@@ -48,6 +52,8 @@ class WeekMonthTrend:
         percentage: bool = False,
         different_axis: bool = True,
         plot_title: bool = None,
+        yaxis_title: Optional[str] = None,
+        secondary_yaxis_title: Optional[str] = None,
         plotsize: Optional[list] = None,
     ):
 
@@ -61,6 +67,11 @@ class WeekMonthTrend:
         self.plot_title = ifnone(
             plot_title, "Weekly/Monthly Trend - " + self.metric_name
         )
+        self.yaxis_title = ifnone(yaxis_title, f"Weekly {self.metric_name}")
+        self.secondary_yaxis_title = ifnone(
+            secondary_yaxis_title, f"Monthly {self.metric_name}"
+        )
+        self.percentage = percentage
         self.number_format = format_percentage if percentage else format_absolute
         self.weekly_df = self._create_weekly_df(weekly_df)
         self.monthly_df = self._create_monthly_df(monthly_df)
@@ -181,6 +192,9 @@ class WeekMonthTrend:
             plot_bgcolor="white",
             title=self.plot_title,
         )
+
+        fig.update_yaxes(title_text=self.yaxis_title, secondary_y=False)
+        fig.update_yaxes(title_text=self.secondary_yaxis_title, secondary_y=True)
 
         if self.plotsize:
             fig.update_layout(

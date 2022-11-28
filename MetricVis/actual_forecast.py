@@ -19,6 +19,8 @@ def plot_actual_forecast(
     percentage: bool = False,
     plot_title: Optional[bool] = None,
     forecast_color: Optional[Union[str, list]] = None,
+    yaxis_title: Optional[str] = None,
+    secondary_yaxis_title: Optional[str] = None,
     plotsize: Optional[list] = None,
 ):
     return ActualForecast(
@@ -31,6 +33,8 @@ def plot_actual_forecast(
         percentage=percentage,
         plot_title=plot_title,
         forecast_color=forecast_color,
+        yaxis_title=yaxis_title,
+        secondary_yaxis_title=secondary_yaxis_title,
         plotsize=plotsize,
     ).create_plot()
 
@@ -47,6 +51,8 @@ class ActualForecast:
         percentage: bool = False,
         plot_title: Optional[bool] = None,
         forecast_color: Optional[Union[str, list]] = None,
+        yaxis_title: Optional[str] = None,
+        secondary_yaxis_title: Optional[str] = None,
         plotsize: Optional[list] = None,
     ):
 
@@ -58,6 +64,7 @@ class ActualForecast:
         self.metric_name = ifnone(metric_name, clean_text(self.actual_col))
         self.metric_name_py = self.metric_name + " PY"
         self.plot_title = ifnone(plot_title, "Actual vs Forecast - " + self.metric_name)
+        self.percentage = percentage
         self.number_format = format_percentage if percentage else format_absolute
         self.forecast_name = ifnone(
             forecast_name,
@@ -67,6 +74,8 @@ class ActualForecast:
         )
         self.plot_df = self._create_monthly_df(self.df)
         self.forecast_color = ifnone(forecast_color, CORE_COLOURS)
+        self.yaxis_title = ifnone(yaxis_title, self.metric_name)
+        self.secondary_yaxis_title = ifnone(secondary_yaxis_title, "YOY Growth")
         self.plotsize = plotsize
 
     def _create_monthly_df(self, df):
@@ -179,8 +188,12 @@ class ActualForecast:
                 yaxis2={"anchor": "x", "overlaying": "y", "side": "left"},
                 yaxis={"anchor": "x", "side": "right"},
                 yaxis_tickformat=".0%",
+                yaxis2_tickformat=".0%" if self.percentage else "~s",
             )
         )
+
+        fig.update_yaxes(title_text=self.yaxis_title, secondary_y=True)
+        fig.update_yaxes(title_text=self.secondary_yaxis_title, secondary_y=False)
 
         if self.plotsize:
             fig.update_layout(
