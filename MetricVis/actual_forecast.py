@@ -127,6 +127,9 @@ class ActualForecast:
 
         plot_df_sample = plot_df.iloc[start_index:]
         plot_df_sample = plot_df_sample.drop(self.forecast_name, axis=1)
+        if self.projection_col:
+            plot_df_sample = plot_df_sample.drop(self.projection_name, axis=1)
+
         if self.plot_past_year:
             plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
                 get_month_before, axis=1, df=plot_df, col=self.metric_name
