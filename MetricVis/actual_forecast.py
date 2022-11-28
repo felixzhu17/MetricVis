@@ -14,6 +14,7 @@ def plot_actual_forecast(
     actual_col: str,
     forecast_col: Union[str, list],
     lookback: int = 12,
+    plot_past_year: bool = True,
     projection_col: Optional[str] = None,
     metric_name: Optional[str] = None,
     forecast_name: Optional[Union[str, list]] = None,
@@ -30,6 +31,7 @@ def plot_actual_forecast(
         actual_col=actual_col,
         forecast_col=forecast_col,
         lookback=lookback,
+        plot_past_year=plot_past_year,
         projection_col=projection_col,
         metric_name=metric_name,
         forecast_name=forecast_name,
@@ -50,6 +52,7 @@ class ActualForecast:
         actual_col: str,
         forecast_col: Union[str, list],
         lookback: int = 12,
+        plot_past_year: bool = True,
         projection_col: Optional[str] = None,
         metric_name: Optional[str] = None,
         forecast_name: Optional[Union[str, list]] = None,
@@ -67,6 +70,7 @@ class ActualForecast:
         self.multi_forecast = check_list_type(self.forecast_col)
         self.df = df[[actual_col] + convert_list_if_not(forecast_col)]
         self.lookback = lookback
+        self.plot_past_year = plot_past_year
         self.projection_col = projection_col
         self.metric_name = ifnone(metric_name, clean_text(self.actual_col))
         self.metric_name_py = self.metric_name + " PY"
@@ -108,15 +112,18 @@ class ActualForecast:
             axis=1,
             inplace=True,
         )
+
         final_index = np.where(plot_df[self.metric_name].notnull())[0][-1]
         plot_df_sample = plot_df.iloc[final_index - self.lookback + 1 :]
         plot_df_sample = plot_df_sample.drop(self.forecast_name, axis=1)
-        plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
-            get_month_before, axis=1, df=plot_df, col=self.metric_name
-        )
-        plot_df_sample["YOY Growth"] = (
-            plot_df_sample[self.metric_name] / plot_df_sample[self.metric_name_py] - 1
-        )
+        if self.plot_past_year:
+            plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
+                get_month_before, axis=1, df=plot_df, col=self.metric_name
+            )
+            plot_df_sample["YOY Growth"] = (
+                plot_df_sample[self.metric_name] / plot_df_sample[self.metric_name_py]
+                - 1
+            )
 
         plot_columns = (
             convert_list_if_not(self.forecast_name) + [self.projection_name]
@@ -129,6 +136,7 @@ class ActualForecast:
             .loc[plot_df_sample.index[0] :]
             .merge(plot_df_sample, how="left", left_index=True, right_index=True)
         )
+
         return final_plot_df
 
     def create_plot(self):
@@ -181,30 +189,31 @@ class ActualForecast:
                 secondary_y=True,
             )
 
-        fig.add_trace(
-            go.Scatter(
-                x=self.plot_df.index,
-                y=self.plot_df["YOY Growth"],
-                name="YOY Growth",
-                legendgroup="YOY Growth",
-                line=dict(color="#C1C7D0", dash="dash"),
-                showlegend=True,
-                mode="lines",
+        if self.plot_past_year:
+            fig.add_trace(
+                go.Scatter(
+                    x=self.plot_df.index,
+                    y=self.plot_df["YOY Growth"],
+                    name="YOY Growth",
+                    legendgroup="YOY Growth",
+                    line=dict(color="#C1C7D0", dash="dash"),
+                    showlegend=True,
+                    mode="lines",
+                )
             )
-        )
 
-        fig.add_trace(
-            go.Scatter(
-                x=self.plot_df.index,
-                y=self.plot_df[self.metric_name_py],
-                name=self.metric_name_py,
-                legendgroup=self.metric_name_py,
-                line=dict(color="#C1C7D0"),
-                showlegend=True,
-                mode="lines",
-            ),
-            secondary_y=True,
-        )
+            fig.add_trace(
+                go.Scatter(
+                    x=self.plot_df.index,
+                    y=self.plot_df[self.metric_name_py],
+                    name=self.metric_name_py,
+                    legendgroup=self.metric_name_py,
+                    line=dict(color="#C1C7D0"),
+                    showlegend=True,
+                    mode="lines",
+                ),
+                secondary_y=True,
+            )
 
         fig.update_layout(
             legend=dict(
