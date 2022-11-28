@@ -114,7 +114,9 @@ class ActualForecast:
         )
 
         final_index = np.where(plot_df[self.metric_name].notnull())[0][-1]
-        plot_df_sample = plot_df.iloc[final_index - self.lookback + 1 :]
+        start_index = max(0, final_index - self.lookback + 1)
+
+        plot_df_sample = plot_df.iloc[start_index:]
         plot_df_sample = plot_df_sample.drop(self.forecast_name, axis=1)
         if self.plot_past_year:
             plot_df_sample[self.metric_name_py] = plot_df_sample.apply(
