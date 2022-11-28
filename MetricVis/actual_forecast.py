@@ -68,7 +68,11 @@ class ActualForecast:
         self.actual_col = actual_col
         self.forecast_col = forecast_col
         self.multi_forecast = check_list_type(self.forecast_col)
-        self.df = df[[actual_col] + convert_list_if_not(forecast_col)]
+        self.df = (
+            df[[actual_col, projection_col] + convert_list_if_not(forecast_col)]
+            if projection_col
+            else df[[actual_col] + convert_list_if_not(forecast_col)]
+        )
         self.lookback = lookback
         self.plot_past_year = plot_past_year
         self.projection_col = projection_col
