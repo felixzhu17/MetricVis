@@ -76,6 +76,10 @@ class ActualForecast:
         self.lookback = lookback
         self.plot_past_year = plot_past_year
         self.projection_col = projection_col
+
+        if projection_col in convert_list_if_not(forecast_col):
+            raise ValueError("Projection column cannot be a forecast column")
+
         self.metric_name = ifnone(metric_name, clean_text(self.actual_col))
         self.metric_name_py = self.metric_name + " PY"
         self.plot_title = ifnone(plot_title, "Actual vs Forecast - " + self.metric_name)
