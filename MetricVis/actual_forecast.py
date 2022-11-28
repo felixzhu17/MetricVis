@@ -14,8 +14,10 @@ def plot_actual_forecast(
     actual_col: str,
     forecast_col: Union[str, list],
     lookback: int = 12,
+    projection_col: Optional[str] = None,
     metric_name: Optional[str] = None,
     forecast_name: Optional[Union[str, list]] = None,
+    projection_name: Optional[str] = None,
     percentage: bool = False,
     plot_title: Optional[bool] = None,
     forecast_color: Optional[Union[str, list]] = None,
@@ -28,8 +30,10 @@ def plot_actual_forecast(
         actual_col=actual_col,
         forecast_col=forecast_col,
         lookback=lookback,
+        projection_col=projection_col,
         metric_name=metric_name,
         forecast_name=forecast_name,
+        projection_name=projection_name,
         percentage=percentage,
         plot_title=plot_title,
         forecast_color=forecast_color,
@@ -46,8 +50,10 @@ class ActualForecast:
         actual_col: str,
         forecast_col: Union[str, list],
         lookback: int = 12,
+        projection_col: Optional[str] = None,
         metric_name: Optional[str] = None,
         forecast_name: Optional[Union[str, list]] = None,
+        projection_name: Optional[str] = None,
         percentage: bool = False,
         plot_title: Optional[bool] = None,
         forecast_color: Optional[Union[str, list]] = None,
@@ -61,6 +67,7 @@ class ActualForecast:
         self.multi_forecast = check_list_type(self.forecast_col)
         self.df = df[[actual_col] + convert_list_if_not(forecast_col)]
         self.lookback = lookback
+        self.projection_col = projection_col
         self.metric_name = ifnone(metric_name, clean_text(self.actual_col))
         self.metric_name_py = self.metric_name + " PY"
         self.plot_title = ifnone(plot_title, "Actual vs Forecast - " + self.metric_name)
@@ -72,6 +79,7 @@ class ActualForecast:
             if self.multi_forecast
             else self.metric_name + " Forecast",
         )
+        self.projection_name = ifnone(projection_name, self.metric_name + " Projection")
         self.plot_df = self._create_monthly_df(self.df)
         self.forecast_color = ifnone(forecast_color, CORE_COLOURS)
         self.yaxis_title = ifnone(yaxis_title, self.metric_name)
@@ -92,6 +100,9 @@ class ActualForecast:
                 self.forecast_col: self.forecast_name,
             }
 
+        if self.projection_col:
+            rename_dict[self.projection_col] = self.projection_name
+
         plot_df.rename(
             rename_dict,
             axis=1,
@@ -107,8 +118,14 @@ class ActualForecast:
             plot_df_sample[self.metric_name] / plot_df_sample[self.metric_name_py] - 1
         )
 
+        plot_columns = (
+            convert_list_if_not(self.forecast_name) + [self.projection_name]
+            if self.projection_col
+            else convert_list_if_not(self.forecast_name)
+        )
+
         final_plot_df = (
-            plot_df[convert_list_if_not(self.forecast_name)]
+            plot_df[plot_columns]
             .loc[plot_df_sample.index[0] :]
             .merge(plot_df_sample, how="left", left_index=True, right_index=True)
         )
@@ -134,6 +151,21 @@ class ActualForecast:
             ),
             secondary_y=True,
         )
+
+        if self.projection_col:
+
+            fig.add_trace(
+                go.Scatter(
+                    x=self.plot_df.index,
+                    y=self.plot_df[self.projection_name],
+                    name=self.projection_name,
+                    legendgroup=self.projection_name,
+                    line=dict(color="#0052CC", dash="dash"),
+                    showlegend=True,
+                    mode="lines",
+                ),
+                secondary_y=True,
+            )
 
         for i, j in zip(convert_list_if_not(self.forecast_name), self.forecast_color):
             fig.add_trace(
